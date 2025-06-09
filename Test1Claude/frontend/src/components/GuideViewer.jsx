@@ -1,6 +1,76 @@
+import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import axios from 'axios';
 
-function GuideViewer({ guide, loading }) {
+function extractPhotoTimestamps(markdown) {
+  const regex = /\[PHOTO: (\d{2}:\d{2}:\d{2})\]/g;
+  const timestamps = [];
+  let match;
+  while ((match = regex.exec(markdown)) !== null) {
+    timestamps.push(match[1]);
+  }
+  return timestamps;
+}
+
+function removePhotoTags(markdown) {
+  // Supprime toutes les balises [PHOTO: ...] du texte
+  return markdown.replace(/\[PHOTO: \d{2}:\d{2}:\d{2}\]/g, '');
+}
+
+function GuideViewer({ guide, loading, videoFilename }) {
+  const [finalMarkdown, setFinalMarkdown] = useState('');
+  const [screenshots, setScreenshots] = useState([]); // [{ ts, url }]
+
+  useEffect(() => {
+    if (loading || !guide) {
+      setFinalMarkdown('');
+      setScreenshots([]);
+      return;
+    }
+    let markdown = '';
+    if (typeof guide === 'string') {
+      markdown = guide;
+    } else if (guide.gemini_response) {
+      markdown = guide.gemini_response;
+    } else if (guide.results && Array.isArray(guide.results) && typeof guide.results[0] === 'string') {
+      markdown = guide.results[0];
+    } else if (guide.results && Array.isArray(guide.results) && guide.results[0]?.gemini_response) {
+      markdown = guide.results[0].gemini_response;
+    } else {
+      markdown = JSON.stringify(guide);
+    }
+
+    const timestamps = extractPhotoTimestamps(markdown);
+    console.log('[GuideViewer] Extracted timestamps:', timestamps);
+
+    // Nettoyer le texte pour enlever les balises [PHOTO: ...]
+    setFinalMarkdown(removePhotoTags(markdown));
+
+    if (!videoFilename || timestamps.length === 0) {
+      setScreenshots([]);
+      return;
+    }
+
+    // Appel backend pour générer les screenshots
+    axios.post('/api/gemini/screenshots', {
+      videoFilename,
+      timestamps
+    }).then(res => {
+      console.log('[GuideViewer] Screenshot API response:', res.data);
+      const images = [];
+      for (const ts of timestamps) {
+        const url = res.data.results[ts];
+        if (url) {
+          images.push({ ts, url });
+        }
+      }
+      setScreenshots(images);
+    }).catch(err => {
+      console.error('[GuideViewer] Screenshot API error:', err);
+      setScreenshots([]);
+    });
+  }, [guide, loading, videoFilename]);
+
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -41,23 +111,22 @@ function GuideViewer({ guide, loading }) {
     );
   }
 
-  // Toujours afficher le texte comme du Markdown
-  let markdown = '';
-  if (typeof guide === 'string') {
-    markdown = guide;
-  } else if (guide.gemini_response) {
-    markdown = guide.gemini_response;
-  } else if (guide.results && Array.isArray(guide.results) && typeof guide.results[0] === 'string') {
-    markdown = guide.results[0];
-  } else if (guide.results && Array.isArray(guide.results) && guide.results[0]?.gemini_response) {
-    markdown = guide.results[0].gemini_response;
-  } else {
-    markdown = JSON.stringify(guide);
-  }
-
   return (
     <div className="bg-white rounded-lg shadow-md p-6 max-h-[800px] overflow-y-auto text-gray-800">
-      <ReactMarkdown>{markdown}</ReactMarkdown>
+      <ReactMarkdown>{finalMarkdown}</ReactMarkdown>
+      {screenshots.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4">Captures extraites de la vidéo :</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {screenshots.map(({ ts, url }) => (
+              <div key={ts} className="flex flex-col items-center bg-gray-50 rounded-lg p-2 shadow">
+                <img src={url} alt={`Screenshot à ${ts}`} className="w-full h-auto rounded mb-2" />
+                <span className="text-xs text-gray-600">{ts}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

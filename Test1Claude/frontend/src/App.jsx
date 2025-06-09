@@ -113,7 +113,7 @@ Consignes de formatage : 1.  Format Markdown strict : Veuillez formater l'intég
 
           {/* Section Visualisation */}
           <div>
-            <GuideViewer guide={guide} loading={loading} />
+            <GuideViewer guide={guide} loading={loading} videoFilename={uploadedFile?.filename} />
           </div>
         </div>
       </div>
