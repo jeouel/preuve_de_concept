@@ -1,0 +1,1181 @@
+openapi: 3.0.0
+info:
+  title: Intelligence Industrielle API
+  description: |
+    API qui gère les opérations CRUD dans MongoDB, les requêtes à GPT, la transcription audio,
+    l'exécution de requêtes BigQuery, l'envoi de SMS et d'appels Twilio, et l'analyse de fichiers avec Gemini.
+  version: 1.0.0
+  contact:
+    name: Intelligence Industrielle
+    url: https://intelligenceindustrielle.com
+
+servers:
+  - url: https://n8n.tools.intelligenceindustrielle.com/webhook
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token d'autorisation requis pour tous les endpoints
+      x-bearer-token: "jOI$3jd^bwMN#L"  # Token d'autorisation par défaut
+
+tags:
+  - name: MongoDB
+    description: Opérations CRUD sur MongoDB
+  - name: AI
+    description: Opérations avec GPT et Gemini
+  - name: Files
+    description: Opérations sur les fichiers (PDF, Images)
+  - name: Communication
+    description: Email, SMS et appels
+  - name: Data
+    description: Opérations BigQuery
+  - name: Web
+    description: Opérations Web
+  - name: Audio
+    description: Transcription audio
+
+paths:
+  # MongoDB Operations
+  /a44e368c-a079-4bf3-870a-e1ed221e8a29/MongoDB/POST/{softwareId}/{dataType}:
+    post:
+      tags:
+        - MongoDB
+      summary: Créer un nouveau document dans MongoDB
+      description: |
+        Endpoint pour créer un nouveau document dans MongoDB.
+        Les paramètres softwareId et dataType sont spécifiés dans l'URL.
+      operationId: mongoCreate
+      parameters:
+        - name: softwareId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifiant du logiciel
+        - name: dataType
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Type de données
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MongoCreateRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /fd7ceafd-3624-455a-bf86-bb9e17315258/MongoDB/GET_All/{softwareId}/{dataType}:
+    post:
+      tags:
+        - MongoDB
+      summary: Récupérer tous les documents d'un type spécifique
+      description: |
+        Endpoint pour récupérer tous les documents d'un type spécifique dans MongoDB.
+        Les paramètres softwareId et dataType sont spécifiés dans l'URL.
+      operationId: mongoGetAll
+      parameters:
+        - name: softwareId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifiant du logiciel
+        - name: dataType
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Type de données
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /a31ef336-5ac1-4645-96d6-44a542e1f9e2/MongoDB/GET_Last/{softwareId}/{dataType}:
+    post:
+      tags:
+        - MongoDB
+      summary: Récupérer le dernier document d'un type spécifique
+      description: |
+        Endpoint pour récupérer le dernier document d'un type spécifique dans MongoDB.
+        Les paramètres softwareId et dataType sont spécifiés dans l'URL.
+      operationId: mongoGetLast
+      parameters:
+        - name: softwareId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifiant du logiciel
+        - name: dataType
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Type de données
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /9331649b-5152-42d6-b0cf-b7da61f5231f/MongoDB/Filter/{softwareId}/{dataType}:
+    post:
+      tags:
+        - MongoDB
+      summary: Filtrer les documents avec un filtre MongoDB personnalisé
+      description: |
+        Endpoint pour filtrer les documents avec un filtre MongoDB personnalisé.
+        Les paramètres softwareId et dataType sont spécifiés dans l'URL.
+      operationId: mongoFilter
+      parameters:
+        - name: softwareId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifiant du logiciel
+        - name: dataType
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Type de données
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MongoFilterRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /6128074d-1d51-49e1-aa9a-c90c0787a2cf/MongoDB/Update/{softwareId}/{dataType}:
+    post:
+      tags:
+        - MongoDB
+      summary: Mettre à jour un document dans MongoDB
+      description: |
+        Endpoint pour mettre à jour un document dans MongoDB.
+        Les paramètres softwareId et dataType sont spécifiés dans l'URL.
+      operationId: mongoUpdate
+      parameters:
+        - name: softwareId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifiant du logiciel
+        - name: dataType
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Type de données
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MongoUpdateRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /35b80165-b68c-45ec-a2c7-0a9c4dacbef8/MongoDB/Delete/{softwareId}/{dataType}/{recordId}:
+    post:
+      tags:
+        - MongoDB
+      summary: Supprimer un document dans MongoDB
+      description: |
+        Endpoint pour supprimer un document dans MongoDB.
+        Les paramètres softwareId, dataType et recordId sont spécifiés dans l'URL.
+      operationId: mongoDelete
+      parameters:
+        - name: softwareId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifiant du logiciel
+        - name: dataType
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Type de données
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du document à supprimer
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /2f784991-c279-4509-9afa-c511a9bf416c/MongoDB/NL/{softwareId}/{dataType}:
+    post:
+      tags:
+        - MongoDB
+      summary: Convertir du langage naturel en requête MongoDB
+      description: |
+        Endpoint pour effectuer une requête en langage naturel (type ChatGPT) pour filtrer des données MongoDB.
+        Permet de convertir une intention de requête en langage naturel en une requête MongoDB.
+      operationId: mongoNLToQuery
+      parameters:
+        - name: softwareId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifiant du logiciel
+        - name: dataType
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Type de données
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MongoNLRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # AI Operations
+  /OpenAI/GPTSearch:
+    post:
+      tags:
+        - AI
+        - Web
+      summary: Effectuer une recherche avancée avec IA
+      description: |
+        Endpoint pour effectuer une recherche avancée en utilisant un modèle IA.
+        Les résultats incluent des citations d'URL et des annotations.
+      operationId: gptSearch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GPTSearchRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /OpenAI/AskGPT:
+    post:
+      tags:
+        - AI
+      summary: Poser une question à GPT avec réponse en JSON
+      description: |
+        Endpoint pour questionner un modèle GPT qui répond toujours en JSON.
+        Important : Le format JSON attendu doit être spécifié dans les instructions système.
+        Par exemple : "Réponds toujours dans le format JSON suivant : { 'explication': '...' }"
+      operationId: askGPT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GPTAskRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /Gemini/AskGPT:
+    post:
+      tags:
+        - AI
+      summary: Poser une question à Gemini
+      description: |
+        Endpoint pour poser une question à Gemini avec des instructions système personnalisées.
+      operationId: askGemini
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GPTRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /Gemini/File_Light:
+    post:
+      tags:
+        - AI
+      summary: Analyse légère de fichier avec Gemini
+      description: |
+        Endpoint pour envoyer un prompt et un fichier (image, vidéo, etc.) de moins de 15Mo à un modèle Gemini pour analyse ou traitement.
+        Le modèle répondra en JSON.
+      operationId: geminiFileLight
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GeminiFileLightRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /Gemini/Analyze:
+    post:
+      tags:
+        - AI
+      summary: Analyse approfondie de fichier avec Gemini
+      description: |
+        Endpoint pour envoyer un prompt et un URI de fichier (préalablement uploadé via GEMINI_FILE_UPLOAD) à un modèle Gemini pour analyse ou traitement.
+        Le modèle répondra en JSON.
+        
+        IMPORTANT: Avant d'utiliser cette action, vous devez d'abord uploader votre fichier en utilisant l'action GEMINI_FILE_UPLOAD.
+        Cette dernière vous fournira un URI de fichier nécessaire pour cette analyse.
+      operationId: geminiFileAnalyze
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeminiAnalyzeRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /Gemini/Upload:
+    post:
+      tags:
+        - AI
+      summary: Obtenir une URL signée pour l'upload de fichier
+      description: |
+        Endpoint pour obtenir une URL signée pour uploader un fichier qui sera ensuite traité par l'action GEMINI_FILE_ANALYZE.
+        Cette étape est nécessaire avant d'utiliser l'analyse de fichier avec Gemini.
+      operationId: geminiFileUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeminiUploadRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # File Operations
+  /PDF/Extract:
+    post:
+      tags:
+        - Files
+      summary: Extraire le texte d'un fichier PDF
+      description: |
+        Endpoint pour extraire le texte d'un fichier PDF.
+      operationId: pdfExtract
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PDFExtractRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /Image/Description:
+    post:
+      tags:
+        - Files
+      summary: Obtenir une description d'une image
+      description: |
+        Endpoint pour obtenir une description détaillée d'une image.
+      operationId: imageDescription
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ImageDescriptionRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # Communication Operations
+  /01dc06b7-81df-46b7-8c58-934a2154d327/Twillio/{action}:
+    post:
+      tags:
+        - Communication
+      summary: Envoyer un SMS ou passer un appel via Twilio
+      description: |
+        Endpoint pour envoyer un SMS ou passer un appel via Twilio.
+        Le paramètre action détermine le type d'opération (SEND_SMS ou SEND_CALL).
+      operationId: twilioAction
+      parameters:
+        - name: action
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [SEND_SMS, SEND_CALL]
+          description: Type d'opération Twilio (SEND_SMS pour SMS, SEND_CALL pour appel)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwilioRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /Outlook/SendEmail:
+    post:
+      tags:
+        - Communication
+      summary: Envoyer un email via Outlook
+      description: |
+        Endpoint pour envoyer un email à un ou plusieurs destinataires.
+        Les destinataires (recipients, cc, bcc) doivent être séparés par des virgules.
+      operationId: sendEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # Data Operations
+  /BigQuery/SQL:
+    post:
+      tags:
+        - Data
+      summary: Exécuter une requête SQL sur BigQuery
+      description: |
+        Endpoint pour exécuter une requête SQL sur BigQuery.
+      operationId: bigQuerySQL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BigQuerySQLRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /BigQuery/NLToSQL:
+    post:
+      tags:
+        - Data
+      summary: Convertir du langage naturel en SQL
+      description: |
+        TODO: À remplir - Endpoint pour convertir du langage naturel en requête SQL
+      operationId: bigQueryNLtoSQL
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /Google/Search:
+    post:
+      tags:
+        - Web
+      summary: Effectuer une recherche Google
+      description: |
+        Endpoint pour effectuer une recherche Google et récupérer les résultats détaillés incluant
+        les résultats organiques, recettes, produits, résultats locaux et questions liées.
+      operationId: googleSearch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleSearchRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoogleSearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /Web/FetchContents:
+    post:
+      tags:
+        - Web
+      summary: Extraire le contenu d'une page web
+      description: |
+        Endpoint pour extraire le contenu brut et le contenu textuel (au format markdown) 
+        d'une page web à partir de son URL.
+      operationId: fetchUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FetchUrlRequestBody'
+      responses:
+        '200':
+          description: Succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchURLResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # Audio Operations
+  /aa2a5214-16bc-4d13-a41e-d76d76eb0212:
+    post:
+      tags:
+        - Audio
+      summary: Endpoint de transcription audio
+      description: |
+        Endpoint dédié à la transcription audio en texte.
+        Accepte un fichier audio et renvoie le texte transcrit.
+      operationId: transcribeAudio
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Fichier audio à transcrire
+      responses:
+        '200':
+          description: Transcription réussie
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Texte transcrit
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    StandardResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indique si la requête a réussi
+        results:
+          type: array
+          items:
+            type: object
+            description: Résultats de l'opération
+      examples:
+        success:
+          value:
+            success: true
+            results: [
+              {
+                "inserted_id": "abc123"
+              }
+            ]
+        error:
+          value:
+            success: false
+            results: [
+              {
+                "error": "Description de l'erreur"
+              }
+            ]
+
+    MongoCreateRequestBody:
+      type: object
+      required:
+        - json_data
+      properties:
+        description:
+          type: string
+          description: Description du document
+        json_data:
+          type: object
+          description: Données à sauvegarder
+      example:
+        value:
+          description: "Nouveau profil utilisateur"
+          json_data:
+            user:
+              name: "Alice"
+              age: 25
+            status: "active"
+
+    MongoFilterRequestBody:
+      type: object
+      required:
+        - mongo_filter
+      properties:
+        mongo_filter:
+          type: object
+          description: Filtre MongoDB personnalisé
+      example:
+        value:
+          mongo_filter:
+            "json_data.user.age": { "$gt": 25 }
+
+    MongoUpdateRequestBody:
+      type: object
+      required:
+        - json_data
+      properties:
+        record_id:
+          type: string
+          description: ID du document à mettre à jour
+        mongo_filter:
+          type: object
+          description: Filtre MongoDB pour sélectionner les documents à mettre à jour
+        json_data:
+          type: object
+          description: Données complètes à sauvegarder (remplace l'ancien document)
+      example:
+        value:
+          record_id: "abc123"
+          json_data:
+            user:
+              name: "Alice"
+              age: 26
+            status: "archived"
+
+    GPTSearchRequestBody:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: Terme ou question de recherche
+      example:
+        value:
+          query: "Explique-moi l'intelligence artificielle"
+
+    GPTRequestBody:
+      type: object
+      required:
+        - system_instruction
+        - prompt
+      properties:
+        system_instruction:
+          type: string
+          description: Instructions système pour GPT
+        prompt:
+          type: string
+          description: Question ou instruction pour GPT
+      example:
+        value:
+          system_instruction: "Tu es un assistant JavaScript. Réponds toujours avec un JSON du type { 'explication': '...' }."
+          prompt: "Quelle est la différence entre let et var ?"
+
+    PDFExtractRequestBody:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          format: binary
+          description: Fichier PDF à analyser
+      example:
+        value:
+          file: "(binary data)"
+
+    ImageDescriptionRequestBody:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          format: binary
+          description: Image à décrire
+      example:
+        value:
+          file: "(binary data)"
+
+    TwilioRequestBody:
+      type: object
+      required:
+        - receiver
+        - message
+      properties:
+        receiver:
+          type: string
+          description: Numéro de téléphone du destinataire
+        message:
+          type: string
+          description: Contenu du message (SMS) ou message à lire (appel)
+      example:
+        value:
+          receiver: "+19876543211"
+          message: "Bonjour, ceci est un test SMS depuis l'API !"
+
+    BigQuerySQLRequestBody:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: Requête SQL à exécuter
+      example:
+        value:
+          query: "SELECT * FROM `project.dataset.table` WHERE age > 25 LIMIT 10"
+
+    MongoNLRequestBody:
+      type: object
+      required:
+        - action
+        - software_id
+        - data_type
+        - query_intent
+      properties:
+        action:
+          type: string
+          enum: [GET_NATURAL]
+          description: Type d'action à effectuer
+        software_id:
+          type: string
+          description: Identifiant du logiciel
+        data_type:
+          type: string
+          description: Type de données
+        query_intent:
+          type: string
+          description: Intention de requête en langage naturel
+        example_json_data:
+          type: object
+          description: Structure JSON d'exemple (facultatif)
+      example:
+        value:
+          action: "GET_NATURAL"
+          software_id: "my_app"
+          data_type: "user_profile"
+          query_intent: "Tous les utilisateurs dont l'âge > 25"
+
+    GeminiFileLightRequestBody:
+      type: object
+      required:
+        - prompt
+        - file
+      properties:
+        prompt:
+          type: string
+          description: Le texte de l'instruction ou question pour le modèle Gemini
+        file:
+          type: string
+          format: binary
+          description: Le fichier à envoyer (image, vidéo, document, etc.)
+      example:
+        value:
+          prompt: "Décris cette image en détail."
+          file: "(binary data)"
+
+    GeminiAnalyzeRequestBody:
+      type: object
+      required:
+        - prompt
+        - uri
+      properties:
+        prompt:
+          type: string
+          description: Le texte de l'instruction ou question pour le modèle Gemini
+        uri:
+          type: string
+          format: uri
+          description: L'URI du fichier obtenu après l'upload via GEMINI_FILE_UPLOAD
+      example:
+        value:
+          prompt: "Décris cette image en détail."
+          uri: "https://generativelanguage.googleapis.com/v1beta/files/u2i743fh4r6y"
+
+    GeminiUploadRequestBody:
+      type: object
+      required:
+        - fileSize
+        - mimeType
+      properties:
+        fileSize:
+          type: integer
+          description: Taille du fichier en bytes
+        mimeType:
+          type: string
+          description: Type MIME du fichier (image/png, video/mp4, audio/mpeg)
+      example:
+        value:
+          fileSize: 123456
+          mimeType: "image/png"
+
+    GPTAskRequestBody:
+      type: object
+      required:
+        - system_instruction
+        - prompt
+      properties:
+        system_instruction:
+          type: string
+          description: Instructions système pour GPT, incluant le format JSON attendu dans la réponse
+        prompt:
+          type: string
+          description: Question ou instruction pour GPT
+      example:
+        value:
+          system_instruction: "Tu es un assistant expert en JavaScript. Réponds toujours dans le format JSON suivant : { 'explication': '...' }"
+          prompt: "Quelle est la différence entre let et var ?"
+
+    SendEmailRequestBody:
+      type: object
+      required:
+        - recipients
+        - subject
+        - body
+        - body_type
+      properties:
+        recipients:
+          type: string
+          description: Adresses email des destinataires principaux, séparées par des virgules
+        cc:
+          type: string
+          description: Adresses email en copie carbone, séparées par des virgules
+        bcc:
+          type: string
+          description: Adresses email en copie carbone invisible, séparées par des virgules
+        subject:
+          type: string
+          description: Sujet de l'email
+        body:
+          type: string
+          description: Corps de l'email
+        body_type:
+          type: string
+          enum: [text, html]
+          description: Format du corps de l'email
+      example:
+        value:
+          recipients: "destinataire1@example.com,destinataire2@example.com"
+          cc: "cc1@example.com"
+          bcc: "bcc1@example.com"
+          subject: "Sujet de l'email"
+          body: "Contenu de l'email."
+          body_type: "html"
+
+    GoogleSearchRequestBody:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: Requête Google à effectuer
+      example:
+        value:
+          query: "intelligence industrielle montreal"
+
+    GoogleSearchResponse:
+      type: object
+      properties:
+        search_metadata:
+          type: object
+          properties:
+            id: 
+              type: string
+            status:
+              type: string
+            created_at:
+              type: string
+              format: date-time
+            processed_at:
+              type: string
+              format: date-time
+            total_time_taken:
+              type: number
+        organic_results:
+          type: array
+          items:
+            type: object
+            properties:
+              position:
+                type: integer
+              title:
+                type: string
+              link:
+                type: string
+              snippet:
+                type: string
+        recipes_results:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              link:
+                type: string
+              source:
+                type: string
+              total_time:
+                type: string
+              ingredients:
+                type: array
+                items:
+                  type: string
+        shopping_results:
+          type: array
+          items:
+            type: object
+            properties:
+              position:
+                type: integer
+              title:
+                type: string
+              price:
+                type: string
+              link:
+                type: string
+        local_results:
+          type: object
+          properties:
+            places:
+              type: array
+              items:
+                type: object
+                properties:
+                  position:
+                    type: integer
+                  title:
+                    type: string
+                  rating:
+                    type: number
+                  reviews:
+                    type: integer
+                  address:
+                    type: string
+
+    FetchUrlRequestBody:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          description: URL de la page web à extraire
+      example:
+        value:
+          url: "https://example.com"
+
+    FetchUrlResponse:
+      type: object
+      properties:
+        raw:
+          type: string
+          description: Contenu brut de la page (ex. HTML)
+        content:
+          type: string
+          description: Contenu principal de la page, converti en Markdown
+
+  responses:
+    BadRequest:
+      description: Requête invalide
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StandardResponse'
+          example:
+            success: false
+            results: [
+              {
+                "error": "Requête invalide"
+              }
+            ]
+
+    ServerError:
+      description: Erreur serveur
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StandardResponse'
+          example:
+            success: false
+            results: [
+              {
+                "error": "Erreur serveur interne"
+              }
+            ] 
