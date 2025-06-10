@@ -98,7 +98,7 @@ router.post('/screenshots', async (req, res) => {
             }
           });
         });
-        results[ts] = `/uploads/screenshots/${outputFilename}`;
+        results[ts] = outputFilename;
       } catch (err) {
         results[ts] = null;
       }

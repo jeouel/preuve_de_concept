@@ -120,7 +120,7 @@ function GuideViewer({ guide, loading, videoFilename }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {screenshots.map(({ ts, url }) => (
               <div key={ts} className="flex flex-col items-center bg-gray-50 rounded-lg p-2 shadow">
-                <img src={url} alt={`Screenshot à ${ts}`} className="w-full h-auto rounded mb-2" />
+                <img src={`/screenshots/${url.split('/').pop()}`} alt={`Screenshot à ${ts}`} className="w-full h-auto rounded mb-2" />
                 <span className="text-xs text-gray-600">{ts}</span>
               </div>
             ))}
