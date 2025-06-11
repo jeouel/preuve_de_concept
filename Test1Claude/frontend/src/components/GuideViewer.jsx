@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
 
 function extractPhotoTimestamps(markdown) {
@@ -113,7 +112,10 @@ function GuideViewer({ guide, loading, videoFilename }) {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 max-h-[800px] overflow-y-auto text-gray-800">
-      <ReactMarkdown>{finalMarkdown}</ReactMarkdown>
+      <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-lg">
+        {finalMarkdown}
+      </pre>
+
       {screenshots.length > 0 && (
         <div className="mt-8">
           <h3 className="text-lg font-semibold mb-4">Captures extraites de la vidéo :</h3>
