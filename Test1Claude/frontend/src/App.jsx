@@ -49,7 +49,22 @@ function App() {
       setError(null);
 
       const formattingInstructions = `
-Consignes de formatage : 1.  Format Markdown strict : Veuillez formater l'intégralité de votre réponse en utilisant le Markdown standard (titres, listes, gras, italique, etc.). 2.  Marquage des photos : Pour chaque instant du texte où une illustration visuelle (photo) serait particulièrement pertinente ou utile pour le support, insérez la balise [PHOTO: HH:MM:SS] exactement à cet endroit. Le HH:MM:SS doit être un timestamp séquentiel et plausible (par exemple, 00:00:15, 00:01:30, 00:02:45, etc.) qui indiquerait le moment idéal pour cette photo dans une séquence hypothétique ou réelle.`;
+Consignes de formatage : 
+1. Format Markdown strict : Utilisez le Markdown standard pour structurer votre réponse avec :
+   - Titres et sous-titres (#, ##, ###)
+   - Listes à puces (-) et numérotées (1., 2., 3.)
+   - Mise en forme (gras **, italique *)
+   - Citations (>)
+   - Code (\`\`\`)
+2. Structure claire :
+   - Commencez par un titre principal
+   - Organisez le contenu en sections logiques
+   - Utilisez des listes pour les étapes ou points importants
+   - Ajoutez des notes ou avertissements en italique si nécessaire
+3. Style professionnel :
+   - Soyez concis et précis
+   - Utilisez un langage clair et direct
+   - Maintenez une cohérence dans la mise en forme`;
 
       const fullPrompt = (prompt.concat(formattingInstructions)).replace(/\n/g, ' ');
 
