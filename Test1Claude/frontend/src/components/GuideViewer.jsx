@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
 
 function extractPhotoTimestamps(markdown) {
   const regex = /\[PHOTO: (\d{2}:\d{2}:\d{2})\]/g;
@@ -111,22 +112,24 @@ function GuideViewer({ guide, loading, videoFilename }) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 max-h-[800px] overflow-y-auto text-gray-800">
-      <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-lg">
-        {finalMarkdown}
-      </pre>
-
+    <div className="bg-white rounded-lg shadow-md p-6 max-h-[800px] overflow-y-auto">
+      <div className="prose max-w-none">
+        <ReactMarkdown>{finalMarkdown}</ReactMarkdown>
+      </div>
       {screenshots.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4">Captures extraites de la vidéo :</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {screenshots.map(({ ts, url }) => (
-              <div key={ts} className="flex flex-col items-center bg-gray-50 rounded-lg p-2 shadow">
-                <img src={`/screenshots/${url.split('/').pop()}`} alt={`Screenshot à ${ts}`} className="w-full h-auto rounded mb-2" />
-                <span className="text-xs text-gray-600">{ts}</span>
+        <div className="mt-6 grid grid-cols-2 gap-4">
+          {screenshots.map(({ ts, url }) => (
+            <div key={ts} className="relative">
+              <img
+                src={url}
+                alt={`Screenshot at ${ts}`}
+                className="w-full h-auto rounded-lg shadow-md"
+              />
+              <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                {ts}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

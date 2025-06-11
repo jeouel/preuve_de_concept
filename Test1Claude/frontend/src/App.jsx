@@ -51,7 +51,7 @@ function App() {
       const formattingInstructions = `
 Consignes de formatage : 
 1. Format Markdown strict : Utilisez le Markdown standard pour structurer votre réponse avec :
-   - Titres et sous-titres (#, ##, ###)
+   - Titres et sous-titres (#, ##)
    - Listes à puces (-) et numérotées (1., 2., 3.)
    - Mise en forme (gras **, italique *)
    - Citations (>)
