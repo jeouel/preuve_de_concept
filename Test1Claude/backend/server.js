@@ -21,6 +21,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(join(__dirname, 'uploads')));
 app.use('/screenshots', express.static(join(__dirname, 'uploads', 'screenshots')));
+app.use('/gifs', express.static(join(__dirname, 'uploads', 'gifs')));
 
 // Routes
 app.use('/api/upload', uploadRoutes);
