@@ -2,6 +2,7 @@ import { useState } from 'react';
 import VideoDropZone from './components/VideoDropZone';
 import PromptInput from './components/PromptInput';
 import GuideViewer from './components/GuideViewer';
+import ExportButton from './components/ExportButton';
 import { uploadVideo, uploadToGemini, analyzeVideo } from './services/api';
 
 function App() {
@@ -109,8 +110,11 @@ function App() {
           </div>
 
           {/* Section Visualisation */}
-          <div>
+          <div className="space-y-6">
             <GuideViewer guide={guide} loading={loading} videoFilename={uploadedFile?.filename} />
+            {guide && (
+              <ExportButton guide={guide} videoFilename={uploadedFile?.filename} />
+            )}
           </div>
         </div>
       </div>
