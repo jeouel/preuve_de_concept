@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
+import { visit } from 'unist-util-visit';
 
 function parseTimeToSeconds(time) {
   // Supporte MM:SS ou HH:MM:SS
@@ -41,11 +42,13 @@ function removeGifTags(markdown) {
 function GuideViewer({ guide, loading, videoFilename }) {
   const [finalMarkdown, setFinalMarkdown] = useState('');
   const [gifs, setGifs] = useState([]); // [{ ts, url, duration }]
+  const [gifMap, setGifMap] = useState({}); // { start: { url, duration } }
 
   useEffect(() => {
     if (loading || !guide) {
       setFinalMarkdown('');
       setGifs([]);
+      setGifMap({});
       return;
     }
     let markdown = '';
@@ -61,36 +64,88 @@ function GuideViewer({ guide, loading, videoFilename }) {
       markdown = JSON.stringify(guide);
     }
 
-    const gifs = extractGifTimestamps(markdown);
-    console.log('[GuideViewer] Extracted GIFs:', gifs);
+    const gifsArr = extractGifTimestamps(markdown);
+    console.log('[GuideViewer] Extracted GIFs:', gifsArr);
 
-    setFinalMarkdown(removeGifTags(markdown));
+    // Ne pas nettoyer les balises GIF, on passe le markdown original !
+    setFinalMarkdown(markdown);
 
-    if (!videoFilename || gifs.length === 0) {
+    if (!videoFilename || gifsArr.length === 0) {
       setGifs([]);
+      setGifMap({});
       return;
     }
 
-    const gifsArr = gifs.map(gif => ({ start: gif.start, duration: gif.duration }));
     axios.post('/api/gemini/gifs', {
       videoFilename,
-      gifs: gifsArr
+      gifs: gifsArr.map(gif => ({ start: gif.start, duration: gif.duration }))
     }).then(res => {
       console.log('[GuideViewer] gif API response:', res.data);
       const images = [];
-      for (let i = 0; i < gifs.length; i++) {
-        const ts = gifs[i].start;
+      const map = {};
+      for (let i = 0; i < gifsArr.length; i++) {
+        const ts = gifsArr[i].start;
         const url = res.data.results[ts];
         if (url) {
-          images.push({ ts, url, duration: gifs[i].duration });
+          images.push({ ts, url, duration: gifsArr[i].duration });
+          map[ts] = { url, duration: gifsArr[i].duration };
         }
       }
       setGifs(images);
+      setGifMap(map);
     }).catch(err => {
       console.error('[GuideViewer] gif API error:', err);
       setGifs([]);
+      setGifMap({});
     });
   }, [guide, loading, videoFilename]);
+
+  // Plugin rehype pour remplacer les balises GIF par un tag HTML custom
+  function rehypeGif() {
+    return (tree) => {
+      visit(tree, 'text', (node, index, parent) => {
+        const regex = /\[GIF: (\d{2}:\d{2}(?::\d{2})?) - (\d{2}:\d{2}(?::\d{2})?)\]/g;
+        let match;
+        let lastIndex = 0;
+        const newChildren = [];
+        while ((match = regex.exec(node.value)) !== null) {
+          if (match.index > lastIndex) {
+            newChildren.push({ type: 'text', value: node.value.slice(lastIndex, match.index) });
+          }
+          newChildren.push({
+            type: 'element',
+            tagName: 'gif-placeholder',
+            properties: { start: match[1] },
+            children: [],
+          });
+          lastIndex = regex.lastIndex;
+        }
+        if (lastIndex < node.value.length) {
+          newChildren.push({ type: 'text', value: node.value.slice(lastIndex) });
+        }
+        if (newChildren.length > 0 && parent && Array.isArray(parent.children)) {
+          parent.children.splice(index, 1, ...newChildren);
+        }
+      });
+    };
+  }
+
+  // Composant React pour afficher le GIF à la place du tag
+  const GifPlaceholder = ({ node }) => {
+    const start = node.properties.start;
+    const gif = gifMap[start];
+    if (!gif) return <span style={{ color: 'red' }}>[GIF non généré]</span>;
+    return (
+      <div className="my-4 flex flex-col items-center">
+        <img
+          src={gif.url}
+          alt={`GIF at ${start}`}
+          className="w-auto max-w-xs h-auto rounded-lg shadow-md"
+        />
+        <div className="text-xs text-gray-500 mt-1">{start} ({gif.duration}s)</div>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -135,24 +190,15 @@ function GuideViewer({ guide, loading, videoFilename }) {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 max-h-[800px] overflow-y-auto">
       <div className="prose max-w-none">
-        <ReactMarkdown>{finalMarkdown}</ReactMarkdown>
+        <ReactMarkdown
+          rehypePlugins={[rehypeGif]}
+          components={{
+            'gif-placeholder': GifPlaceholder,
+          }}
+        >
+          {finalMarkdown}
+        </ReactMarkdown>
       </div>
-      {gifs.length > 0 && (
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          {gifs.map(({ ts, url, duration }) => (
-            <div key={ts} className="relative">
-              <img
-                src={url}
-                alt={`GIF at ${ts}`}
-                className="w-full h-auto rounded-lg shadow-md"
-              />
-              <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
-                {ts} ({duration}s)
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
