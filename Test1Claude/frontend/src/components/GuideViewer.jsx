@@ -43,12 +43,14 @@ function GuideViewer({ guide, loading, videoFilename }) {
   const [finalMarkdown, setFinalMarkdown] = useState('');
   const [gifs, setGifs] = useState([]); // [{ ts, url, duration }]
   const [gifMap, setGifMap] = useState({}); // { start: { url, duration } }
+  const [gifsLoading, setGifsLoading] = useState(false);
 
   useEffect(() => {
     if (loading || !guide) {
       setFinalMarkdown('');
       setGifs([]);
       setGifMap({});
+      setGifsLoading(false);
       return;
     }
     let markdown = '';
@@ -73,9 +75,11 @@ function GuideViewer({ guide, loading, videoFilename }) {
     if (!videoFilename || gifsArr.length === 0) {
       setGifs([]);
       setGifMap({});
+      setGifsLoading(false);
       return;
     }
 
+    setGifsLoading(true);
     axios.post('/api/gemini/gifs', {
       videoFilename,
       gifs: gifsArr.map(gif => ({ start: gif.start, duration: gif.duration }))
@@ -93,10 +97,12 @@ function GuideViewer({ guide, loading, videoFilename }) {
       }
       setGifs(images);
       setGifMap(map);
+      setGifsLoading(false);
     }).catch(err => {
       console.error('[GuideViewer] gif API error:', err);
       setGifs([]);
       setGifMap({});
+      setGifsLoading(false);
     });
   }, [guide, loading, videoFilename]);
 
@@ -147,7 +153,7 @@ function GuideViewer({ guide, loading, videoFilename }) {
     );
   };
 
-  if (loading) {
+  if (loading || gifsLoading) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="animate-pulse">
