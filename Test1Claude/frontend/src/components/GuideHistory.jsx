@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { listGuides } from '../services/api';
 
-function GuideHistory() {
+const GuideHistory = forwardRef((props, ref) => {
   const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const fetchGuides = () => {
     setLoading(true);
     setError(null);
     listGuides()
@@ -18,6 +18,14 @@ function GuideHistory() {
         setError('Erreur lors du chargement de l\'historique.');
         setLoading(false);
       });
+  };
+
+  useImperativeHandle(ref, () => ({
+    refresh: fetchGuides
+  }));
+
+  useEffect(() => {
+    fetchGuides();
   }, []);
 
   return (
@@ -52,6 +60,6 @@ function GuideHistory() {
       </ul>
     </div>
   );
-}
+});
 
 export default GuideHistory; 

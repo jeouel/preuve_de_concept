@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { marked } from 'marked';
 import { saveGuide } from '../services/api';
 
-function ExportButton({ guide, videoFilename }) {
+function ExportButton({ guide, videoFilename, onGuideSaved }) {
   const [exporting, setExporting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -231,6 +231,7 @@ function ExportButton({ guide, videoFilename }) {
       const result = await saveGuide(html, filename);
       if (result.success) {
         setSaveSuccess(true);
+        if (onGuideSaved) onGuideSaved();
       } else {
         setSaveError('Erreur lors de la sauvegarde.');
       }

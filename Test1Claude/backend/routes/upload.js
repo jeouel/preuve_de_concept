@@ -2,6 +2,7 @@ import express from 'express';
 import { uploadVideo } from '../middleware/upload.js';
 import fs from 'fs/promises';
 import path from 'path';
+import { debugLog } from '../utils/logger.js';
 
 const router = express.Router();
 
@@ -43,14 +44,14 @@ router.post('/', async (req, res, next) => {
   }
 }, uploadVideo.single('video'), (req, res) => {
   try {
-    console.log('🔵 [Upload Route] Received upload request');
+    debugLog('🔵 [Upload Route] Received upload request');
 
     if (!req.file) {
-      console.log('🔴 [Upload Route] No file uploaded');
+      debugLog('🔴 [Upload Route] No file uploaded');
       return res.status(400).json({ error: 'No video file uploaded' });
     }
 
-    console.log('🔵 [Upload Route] File uploaded successfully:', {
+    debugLog('🔵 [Upload Route] File uploaded successfully:', {
       filename: req.file.filename,
       originalName: req.file.originalname,
       size: req.file.size,
@@ -67,7 +68,7 @@ router.post('/', async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.error('🔴 [Upload Route] Upload error:', error);
+    debugLog('🔴 [Upload Route] Upload error:', error);
     res.status(500).json({ error: error.message });
   }
 });

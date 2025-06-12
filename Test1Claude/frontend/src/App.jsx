@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import VideoDropZone from './components/VideoDropZone';
 import PromptInput, { defaultInstructions } from './components/PromptInput';
 import GuideViewer from './components/GuideViewer';
@@ -13,6 +13,7 @@ function App() {
   const [guide, setGuide] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const guideHistoryRef = useRef();
 
   const handleVideoDrop = async (file) => {
     // Nettoyage côté frontend AVANT upload
@@ -75,6 +76,13 @@ function App() {
     }
   };
 
+  // Fonction à passer à ExportButton pour rafraîchir l'historique
+  const handleGuideSaved = () => {
+    if (guideHistoryRef.current && guideHistoryRef.current.refresh) {
+      guideHistoryRef.current.refresh();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto px-4 py-8">
@@ -116,13 +124,13 @@ function App() {
           <div className="space-y-6">
             <GuideViewer guide={guide} loading={loading} videoFilename={uploadedFile?.filename} />
             {guide && (
-              <ExportButton guide={guide} videoFilename={uploadedFile?.filename} />
+              <ExportButton guide={guide} videoFilename={uploadedFile?.filename} onGuideSaved={handleGuideSaved} />
             )}
           </div>
         </div>
 
         {/* Historique des guides sauvegardés */}
-        <GuideHistory />
+        <GuideHistory ref={guideHistoryRef} />
       </div>
     </div>
   );
