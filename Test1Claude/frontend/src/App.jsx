@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import VideoDropZone from './components/VideoDropZone';
 import PromptInput, { defaultInstructions } from './components/PromptInput';
 import GuideViewer from './components/GuideViewer';
 import ExportButton from './components/ExportButton';
+import GuideHistory from './components/GuideHistory';
 import { uploadVideo, uploadToGemini, analyzeVideo } from './services/api';
 
 function App() {
@@ -12,24 +13,27 @@ function App() {
   const [guide, setGuide] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const guideHistoryRef = useRef();
 
   const handleVideoDrop = async (file) => {
+    // Nettoyage côté frontend AVANT upload
+    setGuide(null);           // Efface le guide précédent
+    setUploadedFile(null);    // Efface la vidéo précédente (optionnel)
+    setGeminiUri(null);       // Efface l'URI Gemini précédente (optionnel)
+    setError(null);
+
     try {
       setLoading(true);
-      setError(null);
 
-      // 1. Upload to our server
-      console.log('🔵 [App] Uploading video to our server');
+      // 1. Upload to our server (le backend nettoie les fichiers)
       const uploadResponse = await uploadVideo(file);
       setUploadedFile(uploadResponse.file);
 
       // 2. Upload to Gemini
-      console.log('🔵 [App] Starting Gemini upload process');
       const geminiResponse = await uploadToGemini(
         uploadResponse.file.filename,
         file.type
       );
-      console.log('🔵 [App] Gemini upload completed, URI received:', geminiResponse.uri);
       setGeminiUri(geminiResponse.uri);
     } catch (err) {
       setError('Erreur lors du téléchargement de la vidéo');
@@ -69,6 +73,13 @@ function App() {
       console.error('🔴 [App] Analysis error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fonction à passer à ExportButton pour rafraîchir l'historique
+  const handleGuideSaved = () => {
+    if (guideHistoryRef.current && guideHistoryRef.current.refresh) {
+      guideHistoryRef.current.refresh();
     }
   };
 
@@ -113,10 +124,13 @@ function App() {
           <div className="space-y-6">
             <GuideViewer guide={guide} loading={loading} videoFilename={uploadedFile?.filename} />
             {guide && (
-              <ExportButton guide={guide} videoFilename={uploadedFile?.filename} />
+              <ExportButton guide={guide} videoFilename={uploadedFile?.filename} onGuideSaved={handleGuideSaved} />
             )}
           </div>
         </div>
+
+        {/* Historique des guides sauvegardés */}
+        <GuideHistory ref={guideHistoryRef} />
       </div>
     </div>
   );

@@ -41,4 +41,19 @@ export const analyzeVideo = async (uri, prompt) => {
   return response.data;
 };
 
+export const saveGuide = async (html, filename) => {
+  const response = await api.post('/guides/save', { html, filename });
+  return response.data;
+};
+
+export const listGuides = async () => {
+  const response = await api.get('/guides/list');
+  return response.data;
+};
+
+export const fetchGuide = async (filename) => {
+  const response = await api.get(`/guides/${filename}`);
+  return response.data;
+};
+
 export default api;

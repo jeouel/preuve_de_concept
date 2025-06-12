@@ -3,6 +3,7 @@ import { GeminiService } from '../services/geminiService.js';
 import path from 'path';
 import fs from 'fs';
 import { exec } from 'child_process';
+import { debugLog } from '../utils/logger.js';
 
 const router = express.Router();
 const geminiService = new GeminiService();
@@ -10,21 +11,21 @@ const geminiService = new GeminiService();
 // Route pour l'upload vers Gemini
 router.post('/upload', async (req, res) => {
   try {
-    console.log('🔵 [Gemini Route] Received upload request:', req.body);
+    debugLog('🔵 [Gemini Route] Received upload request:', req.body);
     const { videoFilename, mimeType } = req.body;
 
     if (!videoFilename || !mimeType) {
-      console.log('🔴 [Gemini Route] Missing required fields');
+      debugLog('🔴 [Gemini Route] Missing required fields');
       return res.status(400).json({ error: 'Video filename and mime type are required' });
     }
 
     const videoPath = path.join(process.cwd(), 'uploads', videoFilename);
-    console.log('🔵 [Gemini Route] Video path:', videoPath);
+    debugLog('🔵 [Gemini Route] Video path:', videoPath);
 
     // Upload vers Gemini
-    console.log('🔵 [Gemini Route] Starting Gemini upload');
+    debugLog('🔵 [Gemini Route] Starting Gemini upload');
     const uri = await geminiService.uploadFile(videoPath, mimeType);
-    console.log('🔵 [Gemini Route] Gemini upload completed');
+    debugLog('🔵 [Gemini Route] Gemini upload completed');
 
     res.json({
       success: true,
@@ -39,18 +40,18 @@ router.post('/upload', async (req, res) => {
 // Route pour l'analyse avec Gemini
 router.post('/analyze', async (req, res) => {
   try {
-    console.log('🔵 [Gemini Route] Received analysis request:', req.body);
+    debugLog('🔵 [Gemini Route] Received analysis request:', req.body);
     const { uri, prompt } = req.body;
 
     if (!uri || !prompt) {
-      console.log('🔴 [Gemini Route] Missing required fields');
+      debugLog('🔴 [Gemini Route] Missing required fields');
       return res.status(400).json({ error: 'URI and prompt are required' });
     }
 
     // Analyse avec Gemini
-    console.log('🔵 [Gemini Route] Starting Gemini analysis');
+    debugLog('🔵 [Gemini Route] Starting Gemini analysis');
     const result = await geminiService.analyzeFile(uri, prompt);
-    console.log('🔵 [Gemini Route] Gemini analysis completed');
+    debugLog('🔵 [Gemini Route] Gemini analysis completed');
 
     res.json({
       success: true,
@@ -66,7 +67,7 @@ router.post('/analyze', async (req, res) => {
 router.post('/gifs', async (req, res) => {
   try {
     const { videoFilename, gifs } = req.body;
-    console.log('🔵 [Gifs Route] Received request:', { videoFilename, gifs });
+    debugLog('🔵 [Gifs Route] Received request:', { videoFilename, gifs });
     if (!videoFilename || !Array.isArray(gifs) || gifs.length === 0) {
       return res.status(400).json({ success: false, error: 'videoFilename and gifs[] are required' });
     }
@@ -87,7 +88,7 @@ router.post('/gifs', async (req, res) => {
       const outputPath = path.join(gifsDir, outputFilename);
       // ffmpeg -ss start -t duration -i input.mp4 output.gif
       const ffmpegCmd = `ffmpeg -ss ${start} -t ${duration} -i "${videoPath}" -vf "fps=10,scale=480:-1:flags=lanczos" -y "${outputPath}"`;
-      console.log(`🔵 [Gifs Route] Running ffmpeg: ${ffmpegCmd}`);
+      debugLog(`🔵 [Gifs Route] Running ffmpeg: ${ffmpegCmd}`);
       try {
         await new Promise((resolve, reject) => {
           exec(ffmpegCmd, (error, stdout, stderr) => {
@@ -95,7 +96,7 @@ router.post('/gifs', async (req, res) => {
               console.error('🔴 [Gifs Route] ffmpeg error:', error, stderr);
               reject(error);
             } else {
-              console.log('🔵 [Gifs Route] ffmpeg output:', stdout, stderr);
+              debugLog('🔵 [Gifs Route] ffmpeg output:', stdout, stderr);
               resolve();
             }
           });
@@ -105,7 +106,7 @@ router.post('/gifs', async (req, res) => {
         results[start] = null;
       }
     }
-    console.log('🟢 [Gifs Route] Extraction results:', results);
+    debugLog('🟢 [Gifs Route] Extraction results:', results);
     res.json({ success: true, results });
   } catch (err) {
     console.error('🔴 [Gifs Route] Unexpected error:', err);

@@ -27,7 +27,7 @@ function extractGifTimestamps(markdown) {
     gifs.push({
       start,
       end,
-      duration: Math.max(0, endSec - startSec),
+      duration: Math.max(1, endSec - startSec),
       raw: match[0],
     });
   }
