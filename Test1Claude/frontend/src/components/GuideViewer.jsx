@@ -1,29 +1,51 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
 
-function extractPhotoTimestamps(markdown) {
-  const regex = /\[PHOTO: (\d{2}:\d{2}:\d{2})\]/g;
-  const timestamps = [];
-  let match;
-  while ((match = regex.exec(markdown)) !== null) {
-    timestamps.push(match[1]);
+function parseTimeToSeconds(time) {
+  // Supporte MM:SS ou HH:MM:SS
+  const parts = time.split(':').map(Number);
+  if (parts.length === 2) {
+    return parts[0] * 60 + parts[1];
+  } else if (parts.length === 3) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
   }
-  return timestamps;
+  return 0;
 }
 
-function removePhotoTags(markdown) {
-  // Supprime toutes les balises [PHOTO: ...] du texte
-  return markdown.replace(/\[PHOTO: \d{2}:\d{2}:\d{2}\]/g, '');
+function extractGifTimestamps(markdown) {
+  // [GIF: MM:SS - MM:SS] ou [GIF: HH:MM:SS - HH:MM:SS]
+  const regex = /\[GIF: (\d{2}:\d{2}(?::\d{2})?) - (\d{2}:\d{2}(?::\d{2})?)\]/g;
+  const gifs = [];
+  let match;
+  while ((match = regex.exec(markdown)) !== null) {
+    const start = match[1];
+    const end = match[2];
+    const startSec = parseTimeToSeconds(start);
+    const endSec = parseTimeToSeconds(end);
+    gifs.push({
+      start,
+      end,
+      duration: Math.max(0, endSec - startSec),
+      raw: match[0],
+    });
+  }
+  return gifs;
+}
+
+function removeGifTags(markdown) {
+  // Supprime toutes les balises [GIF: ...]
+  return markdown.replace(/\[GIF: \d{2}:\d{2}(?::\d{2})? - \d{2}:\d{2}(?::\d{2})?\]/g, '');
 }
 
 function GuideViewer({ guide, loading, videoFilename }) {
   const [finalMarkdown, setFinalMarkdown] = useState('');
-  const [screenshots, setScreenshots] = useState([]); // [{ ts, url }]
+  const [gifs, setGifs] = useState([]); // [{ ts, url, duration }]
 
   useEffect(() => {
     if (loading || !guide) {
       setFinalMarkdown('');
-      setScreenshots([]);
+      setGifs([]);
       return;
     }
     let markdown = '';
@@ -39,34 +61,34 @@ function GuideViewer({ guide, loading, videoFilename }) {
       markdown = JSON.stringify(guide);
     }
 
-    const timestamps = extractPhotoTimestamps(markdown);
-    console.log('[GuideViewer] Extracted timestamps:', timestamps);
+    const gifs = extractGifTimestamps(markdown);
+    console.log('[GuideViewer] Extracted GIFs:', gifs);
 
-    // Nettoyer le texte pour enlever les balises [PHOTO: ...]
-    setFinalMarkdown(removePhotoTags(markdown));
+    setFinalMarkdown(removeGifTags(markdown));
 
-    if (!videoFilename || timestamps.length === 0) {
-      setScreenshots([]);
+    if (!videoFilename || gifs.length === 0) {
+      setGifs([]);
       return;
     }
 
-    // Appel backend pour générer les screenshots
-    axios.post('/api/gemini/screenshots', {
+    const gifsArr = gifs.map(gif => ({ start: gif.start, duration: gif.duration }));
+    axios.post('/api/gemini/gifs', {
       videoFilename,
-      timestamps
+      gifs: gifsArr
     }).then(res => {
-      console.log('[GuideViewer] Screenshot API response:', res.data);
+      console.log('[GuideViewer] gif API response:', res.data);
       const images = [];
-      for (const ts of timestamps) {
+      for (let i = 0; i < gifs.length; i++) {
+        const ts = gifs[i].start;
         const url = res.data.results[ts];
         if (url) {
-          images.push({ ts, url });
+          images.push({ ts, url, duration: gifs[i].duration });
         }
       }
-      setScreenshots(images);
+      setGifs(images);
     }).catch(err => {
-      console.error('[GuideViewer] Screenshot API error:', err);
-      setScreenshots([]);
+      console.error('[GuideViewer] gif API error:', err);
+      setGifs([]);
     });
   }, [guide, loading, videoFilename]);
 
@@ -111,22 +133,24 @@ function GuideViewer({ guide, loading, videoFilename }) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 max-h-[800px] overflow-y-auto text-gray-800">
-      <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-lg">
-        {finalMarkdown}
-      </pre>
-
-      {screenshots.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4">Captures extraites de la vidéo :</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {screenshots.map(({ ts, url }) => (
-              <div key={ts} className="flex flex-col items-center bg-gray-50 rounded-lg p-2 shadow">
-                <img src={`/screenshots/${url.split('/').pop()}`} alt={`Screenshot à ${ts}`} className="w-full h-auto rounded mb-2" />
-                <span className="text-xs text-gray-600">{ts}</span>
+    <div className="bg-white rounded-lg shadow-md p-6 max-h-[800px] overflow-y-auto">
+      <div className="prose max-w-none">
+        <ReactMarkdown>{finalMarkdown}</ReactMarkdown>
+      </div>
+      {gifs.length > 0 && (
+        <div className="mt-6 grid grid-cols-2 gap-4">
+          {gifs.map(({ ts, url, duration }) => (
+            <div key={ts} className="relative">
+              <img
+                src={url}
+                alt={`GIF at ${ts}`}
+                className="w-full h-auto rounded-lg shadow-md"
+              />
+              <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                {ts} ({duration}s)
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
