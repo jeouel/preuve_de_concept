@@ -3,6 +3,7 @@ import VideoDropZone from './components/VideoDropZone';
 import PromptInput, { defaultInstructions } from './components/PromptInput';
 import GuideViewer from './components/GuideViewer';
 import ExportButton from './components/ExportButton';
+import GuideHistory from './components/GuideHistory';
 import { uploadVideo, uploadToGemini, analyzeVideo } from './services/api';
 
 function App() {
@@ -14,22 +15,24 @@ function App() {
   const [error, setError] = useState(null);
 
   const handleVideoDrop = async (file) => {
+    // Nettoyage côté frontend AVANT upload
+    setGuide(null);           // Efface le guide précédent
+    setUploadedFile(null);    // Efface la vidéo précédente (optionnel)
+    setGeminiUri(null);       // Efface l'URI Gemini précédente (optionnel)
+    setError(null);
+
     try {
       setLoading(true);
-      setError(null);
 
-      // 1. Upload to our server
-      console.log('🔵 [App] Uploading video to our server');
+      // 1. Upload to our server (le backend nettoie les fichiers)
       const uploadResponse = await uploadVideo(file);
       setUploadedFile(uploadResponse.file);
 
       // 2. Upload to Gemini
-      console.log('🔵 [App] Starting Gemini upload process');
       const geminiResponse = await uploadToGemini(
         uploadResponse.file.filename,
         file.type
       );
-      console.log('🔵 [App] Gemini upload completed, URI received:', geminiResponse.uri);
       setGeminiUri(geminiResponse.uri);
     } catch (err) {
       setError('Erreur lors du téléchargement de la vidéo');
@@ -117,6 +120,9 @@ function App() {
             )}
           </div>
         </div>
+
+        {/* Historique des guides sauvegardés */}
+        <GuideHistory />
       </div>
     </div>
   );
