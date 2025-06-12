@@ -1,5 +1,6 @@
 import axios from 'axios';
 import fs from 'fs/promises';
+import { debugLog } from '../utils/logger.js';
 
 export class GeminiService {
   constructor() {
@@ -15,12 +16,12 @@ export class GeminiService {
    */
   async uploadFile(filePath, mimeType) {
     try {
-      console.log('🔵 [GeminiService] Starting file upload process:', { filePath, mimeType });
+      debugLog('🔵 [GeminiService] Starting file upload process:', { filePath, mimeType });
       const fileStats = await fs.stat(filePath);
       const fileSize = fileStats.size;
 
       // Étape 1: Obtenir l'URL signée
-      console.log('🔵 [GeminiService] Requesting signed URL from Gemini API');
+      debugLog('🔵 [GeminiService] Requesting signed URL from Gemini API');
       const uploadResponse = await axios.post(
         `${this.apiBaseUrl}/Gemini/Upload`,
         {
@@ -35,7 +36,7 @@ export class GeminiService {
         }
       );
 
-      console.log('🔵 [GeminiService] Received upload URL response:', uploadResponse.data);
+      debugLog('🔵 [GeminiService] Received upload URL response:', uploadResponse.data);
 
       const uploadUrl = uploadResponse.data.results?.[0]?.upload_url;
 
@@ -44,7 +45,7 @@ export class GeminiService {
       }
 
       // Étape 2: Uploader le fichier avec les headers spécifiques
-      console.log('🔵 [GeminiService] Uploading file to signed URL');
+      debugLog('🔵 [GeminiService] Uploading file to signed URL');
       const fileData = await fs.readFile(filePath);
       const uploadResult = await axios.put(uploadUrl, fileData, {
         headers: {
@@ -55,8 +56,8 @@ export class GeminiService {
         }
       });
 
-      console.log('🔵 [GeminiService] File upload completed successfully');
-      console.log('🔵 [GeminiService] Upload response:', uploadResult.data);
+      debugLog('🔵 [GeminiService] File upload completed successfully');
+      debugLog('🔵 [GeminiService] Upload response:', uploadResult.data);
 
       // Extraire l'URI de la réponse de l'upload
       const fileUri = uploadResult.data?.file?.uri;
@@ -66,7 +67,7 @@ export class GeminiService {
         throw new Error('Failed to get file URI from upload response');
       }
 
-      console.log('🔵 [GeminiService] Successfully extracted file URI:', fileUri);
+      debugLog('🔵 [GeminiService] Successfully extracted file URI:', fileUri);
       return fileUri;
     } catch (error) {
       console.error('🔴 [GeminiService] File upload error:', error);
@@ -86,7 +87,7 @@ export class GeminiService {
    */
   async analyzeFile(uri, prompt) {
     try {
-      console.log('🔵 [GeminiService] Starting file analysis:', { uri, prompt });
+      debugLog('🔵 [GeminiService] Starting file analysis:', { uri, prompt });
       const response = await axios.post(
         `${this.apiBaseUrl}/Gemini/Analyze`,
         {
@@ -101,7 +102,7 @@ export class GeminiService {
         }
       );
 
-      console.log('🔵 [GeminiService] Analysis completed successfully');
+      debugLog('🔵 [GeminiService] Analysis completed successfully');
       return response.data.results?.[0] || response.data;
     } catch (error) {
       console.error('🔴 [GeminiService] File analysis error:', error);

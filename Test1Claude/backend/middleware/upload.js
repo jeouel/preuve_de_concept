@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs/promises';
+import { debugLog } from '../utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -28,7 +29,7 @@ const fileFilter = (req, file, cb) => {
   const allowedExtensions = /\.(mp4|avi|mov|mkv|webm)$/i;
   const allowedMimeTypes = /^(video\/(mp4|quicktime|x-msvideo|x-matroska|webm)|application\/octet-stream)$/i;
 
-  console.log('File details:', {
+  debugLog('File details:', {
     originalname: file.originalname,
     mimetype: file.mimetype,
     extension: path.extname(file.originalname)
@@ -37,7 +38,7 @@ const fileFilter = (req, file, cb) => {
   const hasValidExtension = allowedExtensions.test(file.originalname);
   const hasValidMimeType = allowedMimeTypes.test(file.mimetype);
 
-  console.log('Validation results:', {
+  debugLog('Validation results:', {
     hasValidExtension,
     hasValidMimeType
   });
