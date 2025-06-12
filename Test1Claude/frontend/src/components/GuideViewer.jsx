@@ -138,7 +138,7 @@ function GuideViewer({ guide, loading, videoFilename }) {
     return (
       <div className="my-4 flex flex-col items-center">
         <img
-          src={gif.url}
+          src={`/gifs/${gif.url}`}
           alt={`GIF at ${start}`}
           className="w-auto max-w-xs h-auto rounded-lg shadow-md"
         />
