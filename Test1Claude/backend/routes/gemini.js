@@ -62,51 +62,53 @@ router.post('/analyze', async (req, res) => {
   }
 });
 
-// Route pour extraire des screenshots à partir d'une vidéo
-router.post('/screenshots', async (req, res) => {
+// Route pour générer des GIFs à partir d'une vidéo
+router.post('/gifs', async (req, res) => {
   try {
-    const { videoFilename, timestamps } = req.body;
-    console.log('🔵 [Screenshots Route] Received request:', { videoFilename, timestamps });
-    if (!videoFilename || !Array.isArray(timestamps) || timestamps.length === 0) {
-      return res.status(400).json({ success: false, error: 'videoFilename and timestamps[] are required' });
+    const { videoFilename, gifs } = req.body;
+    console.log('🔵 [Gifs Route] Received request:', { videoFilename, gifs });
+    if (!videoFilename || !Array.isArray(gifs) || gifs.length === 0) {
+      return res.status(400).json({ success: false, error: 'videoFilename and gifs[] are required' });
     }
     const videoPath = path.join(process.cwd(), 'uploads', videoFilename);
     if (!fs.existsSync(videoPath)) {
-      console.error('🔴 [Screenshots Route] Video file not found:', videoPath);
+      console.error('🔴 [Gifs Route] Video file not found:', videoPath);
       return res.status(404).json({ success: false, error: 'Video file not found' });
     }
-    const screenshotsDir = path.join(process.cwd(), 'uploads', 'screenshots');
-    if (!fs.existsSync(screenshotsDir)) {
-      fs.mkdirSync(screenshotsDir, { recursive: true });
+    const gifsDir = path.join(process.cwd(), 'uploads', 'gifs');
+    if (!fs.existsSync(gifsDir)) {
+      fs.mkdirSync(gifsDir, { recursive: true });
     }
     const results = {};
-    for (const ts of timestamps) {
-      const safeTs = ts.replace(/:/g, '_');
-      const outputFilename = `${path.parse(videoFilename).name}_${safeTs}.jpg`;
-      const outputPath = path.join(screenshotsDir, outputFilename);
-      const ffmpegCmd = `ffmpeg -ss ${ts} -i "${videoPath}" -frames:v 1 -q:v 2 "${outputPath}" -y`;
-      console.log(`🔵 [Screenshots Route] Running ffmpeg: ${ffmpegCmd}`);
+    for (const gif of gifs) {
+      const { start, duration } = gif;
+      const safeTs = start.replace(/:/g, '_');
+      const outputFilename = `${path.parse(videoFilename).name}_${safeTs}.gif`;
+      const outputPath = path.join(gifsDir, outputFilename);
+      // ffmpeg -ss start -t duration -i input.mp4 output.gif
+      const ffmpegCmd = `ffmpeg -ss ${start} -t ${duration} -i "${videoPath}" -vf "fps=10,scale=480:-1:flags=lanczos" -y "${outputPath}"`;
+      console.log(`🔵 [Gifs Route] Running ffmpeg: ${ffmpegCmd}`);
       try {
         await new Promise((resolve, reject) => {
           exec(ffmpegCmd, (error, stdout, stderr) => {
             if (error) {
-              console.error('🔴 [Screenshots Route] ffmpeg error:', error, stderr);
+              console.error('🔴 [Gifs Route] ffmpeg error:', error, stderr);
               reject(error);
             } else {
-              console.log('🔵 [Screenshots Route] ffmpeg output:', stdout, stderr);
+              console.log('🔵 [Gifs Route] ffmpeg output:', stdout, stderr);
               resolve();
             }
           });
         });
-        results[ts] = outputFilename;
+        results[start] = outputFilename;
       } catch (err) {
-        results[ts] = null;
+        results[start] = null;
       }
     }
-    console.log('🟢 [Screenshots Route] Extraction results:', results);
+    console.log('🟢 [Gifs Route] Extraction results:', results);
     res.json({ success: true, results });
   } catch (err) {
-    console.error('🔴 [Screenshots Route] Unexpected error:', err);
+    console.error('🔴 [Gifs Route] Unexpected error:', err);
     res.status(500).json({ success: false, error: err.message });
   }
 });

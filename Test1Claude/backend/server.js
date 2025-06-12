@@ -6,6 +6,7 @@ import { dirname, join } from 'path';
 import uploadRoutes from './routes/upload.js';
 import analyzeRoutes from './routes/analyze.js';
 import geminiRoutes from './routes/gemini.js';
+import http from 'http';
 
 dotenv.config();
 
@@ -31,6 +32,9 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+server.setTimeout(600000); // 10 minutes
+
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
