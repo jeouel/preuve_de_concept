@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { marked } from 'marked';
 
 function ExportButton({ guide, videoFilename }) {
   const [exporting, setExporting] = useState(false);
@@ -48,7 +49,21 @@ function ExportButton({ guide, videoFilename }) {
 
       await Promise.all(gifPromises);
 
-      // Créer le HTML avec les GIFs intégrés ou un placeholder si manquant
+      // 1. Remplacement des GIFs par des balises HTML temporaires
+      let guideWithGifs = guide.replace(gifRegex, (match) => {
+        const base64Gif = gifMap.get(match);
+        if (base64Gif) {
+          return `<div class="gif-container">
+            <img src="${base64Gif}" alt="GIF ${match}">
+            <div class="gif-timestamp">${match}</div>
+          </div>`;
+        }
+        return `<div class="gif-container"><span class="gif-missing">GIF non disponible</span><div class="gif-timestamp">${match}</div></div>`;
+      });
+
+      // 2. Conversion Markdown → HTML
+      const guideHtml = marked.parse(guideWithGifs);
+
       const html = `
 <!DOCTYPE html>
 <html lang="fr">
@@ -138,17 +153,7 @@ function ExportButton({ guide, videoFilename }) {
     </style>
 </head>
 <body>
-    ${guide.replace(gifRegex, (match) => {
-        const base64Gif = gifMap.get(match);
-        if (base64Gif) {
-          return `
-            <div class="gif-container">
-                <img src="${base64Gif}" alt="GIF ${match}">
-                <div class="gif-timestamp">${match}</div>
-            </div>`;
-        }
-        return `<div class="gif-container"><span class="gif-missing">GIF non disponible</span><div class="gif-timestamp">${match}</div></div>`;
-      })}
+    ${guideHtml}
 </body>
 </html>`;
 

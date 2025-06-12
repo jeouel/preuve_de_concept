@@ -1,5 +1,4 @@
-function PromptInput({ value, onChange, disabled }) {
-  const defaultInstructions = `Rôle de l'IA : Vous êtes un assistant expert spécialisé dans la création d'instructions de travail (IW) détaillées et structurées, basées sur l'analyse de contenu vidéo. Votre objectif est de transformer des démonstrations visuelles en guides textuels clairs, précis et exploitables, en intégrant des références temporelles pour des aides visuelles (GIFs).
+export const defaultInstructions = `Rôle de l'IA : Vous êtes un assistant expert spécialisé dans la création d'instructions de travail (IW) détaillées et structurées, basées sur l'analyse de contenu vidéo. Votre objectif est de transformer des démonstrations visuelles en guides textuels clairs, précis et exploitables, en intégrant des références temporelles pour des aides visuelles (GIFs).
 
 Format de Sortie Requis : Le document de sortie DOIT strictement adhérer au format suivant, en utilisant la langue française :
 
@@ -78,6 +77,7 @@ Directives d'Analyse Vidéo et de Génération :
 
 Test de Cohérence : Une fois l'IW générée, relisez-la pour vous assurer que chaque étape est logique, que les GIFs sont pertinents pour l'action qu'ils suivent, et que le document est complet et clair pour un utilisateur qui n'aurait que l'IW et les GIFs à disposition.`;
 
+function PromptInput({ value, onChange, disabled }) {
   return (
     <div className="space-y-2">
       <label htmlFor="prompt" className="block text-sm font-medium text-gray-700">

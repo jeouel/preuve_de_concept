@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import VideoDropZone from './components/VideoDropZone';
-import PromptInput from './components/PromptInput';
+import PromptInput, { defaultInstructions } from './components/PromptInput';
 import GuideViewer from './components/GuideViewer';
 import ExportButton from './components/ExportButton';
 import { uploadVideo, uploadToGemini, analyzeVideo } from './services/api';
@@ -8,7 +8,7 @@ import { uploadVideo, uploadToGemini, analyzeVideo } from './services/api';
 function App() {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [geminiUri, setGeminiUri] = useState(null);
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState(defaultInstructions);
   const [guide, setGuide] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -102,7 +102,7 @@ function App() {
 
             <button
               onClick={handleAnalyze}
-              disabled={!geminiUri || !prompt || loading}
+              disabled={!geminiUri || !prompt.trim() || loading}
               className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Analyse en cours...' : 'Analyser et Générer le Guide'}
